@@ -1,4 +1,4 @@
-FROM python:3.10-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
@@ -16,10 +16,10 @@ ENV FLASK_APP=app.py
 ENV FLASK_ENV=production
 
 # Expose the port the app runs on
-EXPOSE 5678
+EXPOSE 6789
 
 # Create the SQLite database directory if it doesn't exist
 RUN mkdir -p instance
 
 # Command to run the application (for production using gunicorn)
-CMD ["gunicorn", "--bind", "0.0.0.0:5678", "app:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:6789", "app:app"]

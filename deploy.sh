@@ -131,7 +131,7 @@ deploy_production() {
     
     if [ $? -eq 0 ]; then
       print_message "Production deployment successful!"
-      print_message "The application is now running at http://localhost:5678"
+      print_message "The application is now running at http://localhost:6789"
     else
       print_error "Failed to start containers."
       exit 1
