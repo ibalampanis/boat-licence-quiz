@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Αρχική Σελίδα - Εφαρμογή Κουίζ{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h2>Καλωσήρθατε, {{ current_user.username }}!</h2>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4>Γρήγορα Στατιστικά</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <h3 class="text-primary">{{ stats.total_quizzes }}</h3>
+                        <p>Κουίζ που έγιναν</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h3 class="text-success">{{ stats.average_score }}%</h3>
+                        <p>Μέση Βαθμολογία</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h3 class="text-warning">{{ stats.best_score }}%</h3>
+                        <p>Καλύτερη Βαθμολογία</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h3 class="text-info">{{ stats.accuracy_percentage }}%</h3>
+                        <p>Συνολική Ακρίβεια</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h4>Πρόσφατες Προσπάθειες Κουίζ</h4>
+            </div>
+            <div class="card-body">
+                {% if recent_attempts %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Ημερομηνία</th>
+                                <th>Βαθμολογία</th>
+                                <th>Σωστές Απαντήσεις</th>
+                                <th>Ενέργεια</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for attempt in recent_attempts %}
+                            <tr>
+                                <td>{{ attempt.completed_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>
+                                    <span
+                                        class="badge bg-{% if attempt.score >= 80 %}success{% elif attempt.score >= 60 %}warning{% else %}danger{% endif %}">
+                                        {{ attempt.score }}%
+                                    </span>
+                                </td>
+                                <td>{{ attempt.correct_answers }}/{{ attempt.total_questions }}</td>
+                                <td>
+                                    <a href="{{ url_for('quiz_results', quiz_id=attempt.id) }}"
+                                        class="btn btn-sm btn-outline-primary">
+                                        Προβολή Αποτελεσμάτων
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p>Δεν έχετε κάνει ακόμα κουίζ. Ξεκινήστε το πρώτο σας κουίζ!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h4>Ξεκινήστε Νέο Κουίζ</h4>
+            </div>
+            <div class="card-body text-center">
+                <p>Έτοιμοι να δοκιμάσετε τις γνώσεις σας;</p>
+                <p class="text-muted">Κάθε κουίζ περιέχει 20 τυχαία επιλεγμένες ερωτήσεις.</p>
+                <a href="{{ url_for('start_quiz') }}" class="btn btn-success btn-lg">
+                    Έναρξη Κουίζ
+                </a>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h4>Επισκόπηση Επιδόσεων</h4>
+            </div>
+            <div class="card-body">
+                <p><strong>Συνολικές Ερωτήσεις που Απαντήθηκαν:</strong> {{ stats.total_questions_answered }}</p>
+                <p><strong>Σωστές Απαντήσεις:</strong> {{ stats.correct_answers }}</p>
+                <div class="progress">
+                    <div class="progress-bar" role="progressbar" style="width: {{ stats.accuracy_percentage }}%"
+                        aria-valuenow="{{ stats.accuracy_percentage }}" aria-valuemin="0" aria-valuemax="100">
+                        {{ stats.accuracy_percentage }}%
+                    </div>
+                </div>
+                <small class="text-muted">Συνολική Ακρίβεια</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

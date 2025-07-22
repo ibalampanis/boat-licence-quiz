@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}Κουίζ - Εφαρμογή Κουίζ{% endblock %}
+
+{% block content %}
+<div class="quiz-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Κουίζ σε Εξέλιξη</h2>
+        <div class="quiz-progress">
+            <span id="current-question">1</span> / <span id="total-questions">{{ questions|length }}</span>
+        </div>
+    </div>
+
+    <div class="progress mb-4">
+        <div class="progress-bar" role="progressbar" style="width: 5%" id="progress-bar"></div>
+    </div>
+
+    <div id="quiz-questions">
+        {% for question in questions %}
+        <div class="question-card card {% if loop.index0 != 0 %}d-none{% endif %}"
+            data-question-index="{{ loop.index0 }}" data-question-id="{{ question.id }}">
+            <div class="card-header">
+                <h5>Ερώτηση {{ loop.index }}</h5>
+            </div>
+            <div class="card-body">
+                <h6 class="card-title">{{ question.question_text }}</h6>
+                <div class="options mt-3">
+                    {% for option_key, option_text in question.options.items() %}
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="question_{{ question.id }}"
+                            id="q{{ question.id }}_{{ option_key }}" value="{{ option_key }}" {% if
+                            user_answers.get(question.id|string)==option_key %}checked{% endif %}>
+                        <label class="form-check-label" for="q{{ question.id }}_{{ option_key }}">
+                            {{ option_key|upper }}. {{ option_text }}
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="quiz-navigation d-flex justify-content-between mt-4">
+        <button type="button" class="btn btn-secondary" id="prev-btn" onclick="previousQuestion()" disabled>
+            Προηγούμενο
+        </button>
+        <button type="button" class="btn btn-primary" id="next-btn" onclick="nextQuestion()">
+            Επόμενο
+        </button>
+        <button type="button" class="btn btn-success d-none" id="submit-btn" onclick="submitQuiz()">
+            Υποβολή Κουίζ
+        </button>
+    </div>
+</div>
+
+<script>
+    let currentQuestionIndex = 0;
+    const totalQuestions = {{ questions| length }};
+    const quizId = {{ quiz_id }};
+    const quizTimeMinutes = {{ quiz_time_minutes }};
+
+    function updateProgress() {
+        const progress = ((currentQuestionIndex + 1) / totalQuestions) * 100;
+        document.getElementById('progress-bar').style.width = progress + '%';
+        document.getElementById('current-question').textContent = currentQuestionIndex + 1;
+    }
+
+    function showQuestion(index) {
+        document.querySelectorAll('.question-card').forEach(card => {
+            card.classList.add('d-none');
+        });
+
+        document.querySelector(`[data-question-index="${index}"]`).classList.remove('d-none');
+
+        // Update navigation buttons
+        document.getElementById('prev-btn').disabled = index === 0;
+
+        if (index === totalQuestions - 1) {
+            document.getElementById('next-btn').classList.add('d-none');
+            document.getElementById('submit-btn').classList.remove('d-none');
+        } else {
+            document.getElementById('next-btn').classList.remove('d-none');
+            document.getElementById('submit-btn').classList.add('d-none');
+        }
+
+        updateProgress();
+    }
+
+    function nextQuestion() {
+        if (currentQuestionIndex < totalQuestions - 1) {
+            currentQuestionIndex++;
+            showQuestion(currentQuestionIndex);
+        }
+    }
+
+    function previousQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            showQuestion(currentQuestionIndex);
+        }
+    }
+
+    function submitQuiz() {
+        if (confirm('Είστε βέβαιοι ότι θέλετε να υποβάλετε το κουίζ; Δεν μπορείτε να αλλάξετε τις απαντήσεις σας μετά την υποβολή.')) {
+            fetch('/submit_quiz', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    quiz_id: quizId
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = data.redirect;
+                    } else {
+                        alert('Σφάλμα κατά την υποβολή του κουίζ: ' + data.message);
+                    }
+                });
+        }
+    }
+
+    // Save answer when radio button is selected
+    document.addEventListener('change', function (e) {
+        if (e.target.type === 'radio') {
+            const questionId = e.target.closest('[data-question-id]').dataset.questionId;
+            const answer = e.target.value;
+
+            fetch('/submit_answer', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    quiz_id: quizId,
+                    question_id: questionId,
+                    answer: answer
+                })
+            });
+        }
+    });
+
+    // Initialize
+    updateProgress();
+</script>
+{% endblock %}

@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Στατιστικά - Εφαρμογή Κουίζ{% endblock %}
+
+{% block content %}
+<h2>Τα Στατιστικά σας</h2>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div></div> <!-- Empty div for flexbox spacing -->
+    <div>
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#resetStatsModal">
+            <i class="bi bi-arrow-counterclockwise"></i> Μηδενισμός Στατιστικών
+        </button>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-2 text-center">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h3>{{ stats.total_quizzes }}</h3>
+                <p>Συνολικά Κουίζ</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 text-center">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h3>{{ stats.average_score }}%</h3>
+                <p>Μέση Βαθμολογία</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 text-center">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <h3>{{ stats.best_score }}%</h3>
+                <p>Καλύτερη Βαθμολογία</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 text-center">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h3>{{ stats.total_questions_answered }}</h3>
+                <p>Ερωτήσεις που Απαντήθηκαν</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 text-center">
+        <div class="card bg-secondary text-white">
+            <div class="card-body">
+                <h3>{{ stats.correct_answers }}</h3>
+                <p>Σωστές Απαντήσεις</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 text-center">
+        <div class="card bg-dark text-white">
+            <div class="card-body">
+                <h3>{{ stats.accuracy_percentage }}%</h3>
+                <p>Ακρίβεια</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if chart_data.dates %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h4>Εξέλιξη Βαθμολογίας</h4>
+    </div>
+    <div class="card-body">
+        <canvas id="scoreChart" width="400" height="200"></canvas>
+    </div>
+</div>
+{% endif %}
+
+<div class="card">
+    <div class="card-header">
+        <h4>Όλες οι Προσπάθειες Κουίζ</h4>
+    </div>
+    <div class="card-body">
+        {% if all_attempts %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Ημερομηνία</th>
+                        <th>Βαθμολογία</th>
+                        <th>Σωστές/Σύνολο</th>
+                        <th>Ακρίβεια</th>
+                        <th>Ενέργεια</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attempt in all_attempts %}
+                    <tr>
+                        <td>{{ attempt.completed_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>
+                            <span
+                                class="badge bg-{% if attempt.score >= 80 %}success{% elif attempt.score >= 60 %}warning{% else %}danger{% endif %}">
+                                {{ attempt.score }}%
+                            </span>
+                        </td>
+                        <td>{{ attempt.correct_answers }}/{{ attempt.total_questions }}</td>
+                        <td>{{ ((attempt.correct_answers / attempt.total_questions) * 100)|round(1) }}%</td>
+                        <td>
+                            <a href="{{ url_for('quiz_results', quiz_id=attempt.id) }}"
+                                class="btn btn-sm btn-outline-primary">
+                                Προβολή Λεπτομερειών
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p>Δεν έχετε κάνει ακόμα κουίζ. <a href="{{ url_for('start_quiz') }}">Κάντε το πρώτο σας κουίζ!</a></p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Reset Statistics Modal -->
+<div class="modal fade" id="resetStatsModal" tabindex="-1" aria-labelledby="resetStatsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="resetStatsModalLabel">Επιβεβαίωση Μηδενισμού</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Κλείσιμο"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-danger">Προσοχή: Αυτή η ενέργεια θα διαγράψει όλο το ιστορικό κουίζ και τα στατιστικά
+                    σας!</p>
+                <p>Είστε βέβαιοι ότι θέλετε να συνεχίσετε;</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Ακύρωση</button>
+                <form action="{{ url_for('reset_statistics') }}" method="post">
+                    <button type="submit" class="btn btn-danger">Μηδενισμός Στατιστικών</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if chart_data.dates %}
+<script>
+    const ctx = document.getElementById('scoreChart').getContext('2d');
+    const scoreChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {{ chart_data.dates | tojson }},
+    datasets: [{
+        label: 'Βαθμολογίες Κουίζ (%)',
+        data: {{ chart_data.scores | tojson }},
+        borderColor: 'rgb(75, 192, 192)',
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        tension: 0.1
+            }]
+        },
+    options: {
+        responsive: true,
+            scales: {
+            y: {
+                beginAtZero: true,
+                    max: 100
+            }
+        }
+    }
+    });
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Πίνακας Διαχείρισης | Εφαρμογή Κουίζ{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">Πίνακας Διαχείρισης</h1>
+    </div>
+</div>
+
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3>Διαχείριση Χρηστών</h3>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Όνομα Χρήστη</th>
+                                <th>Email</th>
+                                <th>Ημερομηνία Εγγραφής</th>
+                                <th>Διαχειριστής</th>
+                                <th>Ενέργειες</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td>{{ user.id }}</td>
+                                <td>{{ user.username }}</td>
+                                <td>{{ user.email }}</td>
+                                <td>{{ user.created_at.strftime('%d/%m/%Y') }}</td>
+                                <td>
+                                    {% if user.is_superuser %}
+                                    <span class="badge bg-success">Ναι</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Όχι</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if user.id != current_user.id %}
+                                    <form action="{{ url_for('toggle_superuser', user_id=user.id) }}" method="post"
+                                        class="d-inline">
+                                        <button type="submit"
+                                            class="btn btn-sm {% if user.is_superuser %}btn-warning{% else %}btn-success{% endif %}">
+                                            {% if user.is_superuser %}
+                                            <i class="bi bi-person"></i> Αφαίρεση Δικαιωμάτων
+                                            {% else %}
+                                            <i class="bi bi-person-gear"></i> Προσθήκη Δικαιωμάτων
+                                            {% endif %}
+                                        </button>
+                                    </form>
+                                    <form action="{{ url_for('delete_user', user_id=user.id) }}" method="post"
+                                        class="d-inline"
+                                        onsubmit="return confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτόν τον χρήστη;');">
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            <i class="bi bi-trash"></i> Διαγραφή
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    <span class="text-muted"><i class="bi bi-info-circle"></i> Τρέχων Χρήστης</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3>Διαχείριση Ερωτήσεων</h3>
+                <a href="{{ url_for('add_question') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Προσθήκη Ερώτησης
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Ερώτηση</th>
+                                <th>Ενέργειες</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for question in questions %}
+                            <tr>
+                                <td>{{ question.id }}</td>
+                                <td>{{ question.question_text|truncate(80) }}</td>
+                                <td>
+                                    <a href="{{ url_for('edit_question', question_id=question.id) }}"
+                                        class="btn btn-sm btn-info">
+                                        <i class="bi bi-pencil"></i> Επεξεργασία
+                                    </a>
+                                    <form action="{{ url_for('delete_question', question_id=question.id) }}"
+                                        method="post" class="d-inline"
+                                        onsubmit="return confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή την ερώτηση;');">
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            <i class="bi bi-trash"></i> Διαγραφή
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

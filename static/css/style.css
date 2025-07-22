@@ -1,0 +1,60 @@
+.quiz-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.question-card {
+    min-height: 300px;
+    transition: all 0.3s ease;
+}
+
+.quiz-progress {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.options .form-check {
+    padding: 10px;
+    border-radius: 5px;
+    transition: background-color 0.2s;
+}
+
+.options .form-check:hover {
+    background-color: #f8f9fa;
+}
+
+.question-result {
+    transition: all 0.3s ease;
+}
+
+.badge {
+    margin-right: 5px;
+}
+
+.card {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1rem;
+}
+
+.navbar-brand {
+    font-weight: bold;
+}
+
+.stats-card {
+    text-align: center;
+    padding: 1rem;
+}
+
+.progress {
+    height: 10px;
+}
+
+@media (max-width: 768px) {
+    .quiz-container {
+        padding: 0 15px;
+    }
+
+    .question-card {
+        min-height: 250px;
+    }
+}

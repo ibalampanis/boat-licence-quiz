@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Αποτελέσματα Κουίζ - Εφαρμογή Κουίζ{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header text-center">
+                <h3>Αποτελέσματα Κουίζ</h3>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <h1
+                        class="display-4 {% if quiz_attempt.score >= 80 %}text-success{% elif quiz_attempt.score >= 60 %}text-warning{% else %}text-danger{% endif %}">
+                        {{ quiz_attempt.score }}%
+                    </h1>
+                    <p class="lead">{{ quiz_attempt.correct_answers }} από {{ quiz_attempt.total_questions }} σωστές
+                    </p>
+                    <p class="text-muted">Ολοκληρώθηκε στις: {{ quiz_attempt.completed_at.strftime('%Y-%m-%d %H:%M') }}
+                    </p>
+                </div>
+
+                <div class="progress mb-4">
+                    <div class="progress-bar {% if quiz_attempt.score >= 80 %}bg-success{% elif quiz_attempt.score >= 60 %}bg-warning{% else %}bg-danger{% endif %}"
+                        role="progressbar" style="width: {{ quiz_attempt.score }}%">
+                    </div>
+                </div>
+
+                <div class="row text-center mb-4">
+                    <div class="col-md-4">
+                        <div class="card bg-success text-white">
+                            <div class="card-body">
+                                <h4>{{ quiz_attempt.correct_answers }}</h4>
+                                <p>Σωστές</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-danger text-white">
+                            <div class="card-body">
+                                <h4>{{ quiz_attempt.total_questions - quiz_attempt.correct_answers }}</h4>
+                                <p>Λάθος</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body">
+                                <h4>{{ quiz_attempt.total_questions }}</h4>
+                                <p>Σύνολο</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-primary me-2">Επιστροφή στην Αρχική Σελίδα</a>
+                    <a href="{{ url_for('start_quiz') }}" class="btn btn-success">Κάντε Άλλο Κουίζ</a>
+                    <button class="btn btn-info" onclick="toggleDetailedResults()">Εμφάνιση Λεπτομερών
+                        Αποτελεσμάτων</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4 d-none" id="detailed-results">
+            <div class="card-header">
+                <h4>Λεπτομερή Αποτελέσματα</h4>
+            </div>
+            <div class="card-body">
+                {% for result in detailed_results %}
+                <div
+                    class="question-result mb-4 p-3 border rounded {% if result.is_correct %}border-success bg-light{% else %}border-danger{% endif %}">
+                    <h6>Ερώτηση {{ loop.index }}</h6>
+                    <p><strong>{{ result.question.question_text }}</strong></p>
+
+                    <div class="row">
+                        {% for option_key, option_text in result.question.options.items() %}
+                        <div class="col-md-6 mb-2">
+                            <span class="badge 
+                                {% if option_key == result.question.correct_answer %}bg-success
+                                {% elif option_key == result.user_answer and not result.is_correct %}bg-danger
+                                {% else %}bg-secondary{% endif %}">
+                                {{ option_key|upper }}
+                            </span>
+                            {{ option_text }}
+                            {% if option_key == result.question.correct_answer %}
+                            <span class="text-success">✓ Σωστή Απάντηση</span>
+                            {% elif option_key == result.user_answer and not result.is_correct %}
+                            <span class="text-danger">✗ Η Απάντησή σας</span>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleDetailedResults() {
+        const detailedResults = document.getElementById('detailed-results');
+        detailedResults.classList.toggle('d-none');
+    }
+</script>
+{% endblock %}

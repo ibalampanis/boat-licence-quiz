@@ -1,0 +1,32 @@
+version: "3"
+
+services:
+  # Production service
+  web:
+    build: .
+    ports:
+      - "5678:5678"
+    volumes:
+      - ./instance:/app/instance
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_ENV=production
+      - SECRET_KEY=your-production-secret-key-change-this
+    restart: unless-stopped
+
+  # Development service (uncomment to use)
+  # web-dev:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.dev
+  #   ports:
+  #     - "5679:5678"
+  #   volumes:
+  #     - .:/app
+  #     - ./instance:/app/instance
+  #   environment:
+  #     - FLASK_APP=app.py
+  #     - FLASK_ENV=development
+  #     - FLASK_DEBUG=1
+  #     - SECRET_KEY=dev-secret-key
+  #   restart: unless-stopped
