@@ -24,39 +24,6 @@
 
 ```bash
 # Εμφάνιση βοήθειας
-./fouskoto.sh help
-
-# Ανάπτυξη για περιβάλλον παραγωγής
-./fouskoto.sh prod
-
-# Ανάπτυξη για περιβάλλον development
-./fouskoto.sh dev
-
-# Τερματισμός containers παραγωγής
-./fouskoto.sh stop
-
-# Τερματισμός containers ανάπτυξης
-./fouskoto.sh stop-dev
-
-# Εμφάνιση κατάστασης containers
-./fouskoto.sh status
-
-# Δημιουργία αντιγράφου ασφαλείας της βάσης δεδομένων
-./fouskoto.sh backup
-
-# Επαναφορά αντιγράφου ασφαλείας της βάσης δεδομένων
-./fouskoto.sh restore
-
-# Καθαρισμός όλων των containers και images του project
-./fouskoto.sh clean
-```
-
-### Εναλλακτικό Script (deploy.sh)
-
-Για πιο απλή διαχείριση, υπάρχει επίσης το script `deploy.sh`:
-
-```bash
-# Εμφάνιση βοήθειας
 ./deploy.sh help
 
 # Ανάπτυξη για περιβάλλον παραγωγής
@@ -65,8 +32,23 @@
 # Ανάπτυξη για περιβάλλον development
 ./deploy.sh dev
 
-# Τερματισμός containers
+# Τερματισμός containers παραγωγής
 ./deploy.sh stop
+
+# Τερματισμός containers ανάπτυξης
+./deploy.sh stop-dev
+
+# Εμφάνιση κατάστασης containers
+./deploy.sh status
+
+# Δημιουργία αντιγράφου ασφαλείας της βάσης δεδομένων
+./deploy.sh backup
+
+# Επαναφορά αντιγράφου ασφαλείας της βάσης δεδομένων
+./deploy.sh restore
+
+# Καθαρισμός όλων των containers και images του project
+./deploy.sh clean
 ```
 
 ### Χειροκίνητη Εκτέλεση (Παραγωγή)
