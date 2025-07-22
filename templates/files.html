@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Αρχεία - Εφαρμογή Κουίζ{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Διαθέσιμα Αρχεία</h2>
+
+    <div class="card">
+        <div class="card-header">
+            <h4>Αρχεία για Κατέβασμα</h4>
+        </div>
+        <div class="card-body">
+            {% if files %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Όνομα Αρχείου</th>
+                            <th>Ενέργειες</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for file in files %}
+                        <tr>
+                            <td>{{ file }}</td>
+                            <td>
+                                <a href="{{ url_for('download_file', filename=file) }}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-download"></i> Κατέβασμα
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                Δεν υπάρχουν διαθέσιμα αρχεία αυτή τη στιγμή.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Επιστροφή στην Αρχική Σελίδα
+        </a>
+    </div>
+</div>
+{% endblock %}

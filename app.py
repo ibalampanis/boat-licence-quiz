@@ -23,6 +23,8 @@ import json
 import random
 from datetime import datetime
 from werkzeug.security import generate_password_hash
+import os
+from flask import send_from_directory
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -49,6 +51,7 @@ def load_questions_from_file():
         with open("questions.json", "r", encoding="utf-8") as f:
             questions_data = json.load(f)
 
+        count = 0
         for q_data in questions_data:
             existing = Question.query.filter_by(
                 question_text=q_data["question"]
@@ -59,14 +62,22 @@ def load_questions_from_file():
                     option_a=q_data["options"]["a"],
                     option_b=q_data["options"]["b"],
                     option_c=q_data["options"]["c"],
+                    option_d="", # Adding empty option_d since it's required
                     correct_answer=q_data["correct_answer"],
                 )
                 db.session.add(question)
+                count += 1
 
         db.session.commit()
-        print("Questions loaded successfully!")
+        print(f"Questions loaded successfully! Added {count} new questions.")
     except FileNotFoundError:
-        print("questions.json file not found. Please create it with your questions.")
+        print("WARNING: questions.json file not found. Please create it with your questions.")
+        # Check if there are any questions in the database already
+        question_count = Question.query.count()
+        if question_count > 0:
+            print(f"Found {question_count} questions already in the database.")
+        else:
+            print("No questions found in database. Application may not function correctly.")
     except Exception as e:
         print(f"Error loading questions: {e}")
 
@@ -443,6 +454,27 @@ def edit_question(question_id):
         return redirect(url_for("admin_panel"))
 
     return render_template("edit_question.html", question=question)
+
+
+@app.route("/files")
+@login_required
+def list_files():
+    """List all files in the files directory for download"""
+    files_dir = os.path.join(os.getcwd(), "files")
+    files = []
+    
+    # Ensure the directory exists
+    if os.path.exists(files_dir) and os.path.isdir(files_dir):
+        # Get all files (not directories) in the files folder
+        files = [f for f in os.listdir(files_dir) if os.path.isfile(os.path.join(files_dir, f))]
+    
+    return render_template("files.html", files=files)
+
+@app.route("/download/<filename>")
+@login_required
+def download_file(filename):
+    """Download a file from the files directory"""
+    return send_from_directory("files", filename, as_attachment=True)
 
 
 if __name__ == "__main__":

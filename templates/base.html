@@ -20,6 +20,7 @@
             <div class="navbar-nav ms-auto">
                 <a class="nav-link" href="{{ url_for('dashboard') }}">Αρχική Σελίδα</a>
                 <a class="nav-link" href="{{ url_for('statistics') }}">Στατιστικά</a>
+                <a class="nav-link" href="{{ url_for('list_files') }}">Αρχεία</a>
                 {% if current_user.is_superuser %}
                 <a class="nav-link" href="{{ url_for('admin_panel') }}">Διαχείριση</a>
                 {% endif %}

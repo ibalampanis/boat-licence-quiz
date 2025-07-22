@@ -8,10 +8,13 @@ services:
       - "6789:6789"
     volumes:
       - ./instance:/app/instance
+      - ./questions.json:/app/questions.json
+      - ./files:/app/files
     environment:
       - FLASK_APP=app.py
       - FLASK_ENV=production
       - SECRET_KEY=your-production-secret-key-change-this
+      - TZ=Europe/Athens
     restart: unless-stopped
 
   # Development service (uncomment to use)
