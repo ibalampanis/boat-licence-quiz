@@ -25,6 +25,7 @@ from datetime import datetime
 from werkzeug.security import generate_password_hash
 import os
 from flask import send_from_directory
+import pytz
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -39,10 +40,46 @@ login_manager.login_message = (
 )
 login_manager.login_message_category = "warning"
 
+# Add timezone conversion function to template context
+@app.context_processor
+def inject_timezone_functions():
+    return dict(to_athens_time=to_athens_time)
+
 
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, int(user_id))
+
+
+def superuser_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_superuser:
+            flash("Πρόσβαση μόνο για διαχειριστές", "danger")
+            return redirect(url_for("dashboard"))
+        return f(*args, **kwargs)
+
+    return decorated_function
+
+
+def to_athens_time(utc_datetime):
+    """Convert UTC datetime to Athens time"""
+    if utc_datetime is None:
+        return None
+    
+    # Create UTC timezone object
+    utc_tz = pytz.UTC
+    
+    # Create Athens timezone object
+    athens_tz = pytz.timezone('Europe/Athens')
+    
+    # If the datetime is naive (no timezone info), assume it's UTC
+    if utc_datetime.tzinfo is None:
+        utc_datetime = utc_tz.localize(utc_datetime)
+    
+    # Convert to Athens time
+    athens_time = utc_datetime.astimezone(athens_tz)
+    return athens_time
 
 
 def load_questions_from_file():
@@ -317,11 +354,40 @@ def statistics():
     chart_data = {"dates": [], "scores": [], "categories": {}}
 
     for attempt in all_attempts[-10:]:  # Last 10 attempts for chart
-        chart_data["dates"].append(attempt.completed_at.strftime("%Y-%m-%d"))
+        chart_data["dates"].append(to_athens_time(attempt.completed_at).strftime("%Y-%m-%d"))
         chart_data["scores"].append(attempt.score)
 
     return render_template(
-        "statistics.html", stats=stats, all_attempts=all_attempts, chart_data=chart_data
+        "statistics.html", stats=stats, all_attempts=all_attempts, chart_data=chart_data, viewed_user=None
+    )
+
+
+@app.route("/statistics/<int:user_id>")
+@login_required
+@superuser_required
+def user_statistics(user_id):
+    # Only superusers can view other users' statistics
+    user = User.query.get_or_404(user_id)
+    stats = user.get_statistics()
+    all_attempts = (
+        QuizAttempt.query.filter_by(user_id=user.id, is_completed=True)
+        .order_by(QuizAttempt.completed_at.desc())
+        .all()
+    )
+
+    # Prepare data for charts
+    chart_data = {"dates": [], "scores": [], "categories": {}}
+
+    for attempt in all_attempts[-10:]:  # Last 10 attempts for chart
+        chart_data["dates"].append(to_athens_time(attempt.completed_at).strftime("%Y-%m-%d"))
+        chart_data["scores"].append(attempt.score)
+
+    return render_template(
+        "statistics.html", 
+        stats=stats, 
+        all_attempts=all_attempts, 
+        chart_data=chart_data,
+        viewed_user=user  # Pass the user being viewed
     )
 
 
@@ -336,15 +402,19 @@ def reset_statistics():
     return redirect(url_for("statistics"))
 
 
-def superuser_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not current_user.is_authenticated or not current_user.is_superuser:
-            flash("Πρόσβαση μόνο για διαχειριστές", "danger")
-            return redirect(url_for("dashboard"))
-        return f(*args, **kwargs)
+@app.route("/reset_user_statistics/<int:user_id>", methods=["POST"])
+@login_required
+@superuser_required
+def reset_user_statistics(user_id):
+    # Get user or 404
+    user = User.query.get_or_404(user_id)
+    
+    # Delete all quiz attempts for the specified user
+    QuizAttempt.query.filter_by(user_id=user_id).delete()
+    db.session.commit()
 
-    return decorated_function
+    flash(f"Τα στατιστικά του χρήστη {user.username} μηδενίστηκαν με επιτυχία", "success")
+    return redirect(url_for("user_statistics", user_id=user_id))
 
 
 @app.route("/admin")

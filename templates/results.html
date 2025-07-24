@@ -12,17 +12,23 @@
             <div class="card-body">
                 <div class="text-center mb-4">
                     <h1
-                        class="display-4 {% if quiz_attempt.score >= 80 %}text-success{% elif quiz_attempt.score >= 60 %}text-warning{% else %}text-danger{% endif %}">
+                        class="display-4 {% if quiz_attempt.correct_answers >= 18 %}text-success{% else %}text-danger{% endif %}">
                         {{ quiz_attempt.score }}%
                     </h1>
                     <p class="lead">{{ quiz_attempt.correct_answers }} από {{ quiz_attempt.total_questions }} σωστές
                     </p>
-                    <p class="text-muted">Ολοκληρώθηκε στις: {{ quiz_attempt.completed_at.strftime('%Y-%m-%d %H:%M') }}
+                    <p
+                        class="{% if quiz_attempt.correct_answers >= 18 %}text-success{% else %}text-danger{% endif %} fw-bold">
+                        {% if quiz_attempt.correct_answers >= 18 %}Επιτυχία! (Απαιτούνται 18/20 σωστές απαντήσεις){%
+                        else %}Αποτυχία (Απαιτούνται 18/20 σωστές απαντήσεις){% endif %}
+                    </p>
+                    <p class="text-muted">Ολοκληρώθηκε στις: {{
+                        to_athens_time(quiz_attempt.completed_at).strftime('%Y-%m-%d %H:%M') }}
                     </p>
                 </div>
 
                 <div class="progress mb-4">
-                    <div class="progress-bar {% if quiz_attempt.score >= 80 %}bg-success{% elif quiz_attempt.score >= 60 %}bg-warning{% else %}bg-danger{% endif %}"
+                    <div class="progress-bar {% if quiz_attempt.correct_answers >= 18 %}bg-success{% else %}bg-danger{% endif %}"
                         role="progressbar" style="width: {{ quiz_attempt.score }}%">
                     </div>
                 </div>

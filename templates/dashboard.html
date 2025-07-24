@@ -18,11 +18,14 @@
                         <p>Κουίζ που έγιναν</p>
                     </div>
                     <div class="col-md-3 text-center">
-                        <h3 class="text-success">{{ stats.average_score }}%</h3>
+                        <h3
+                            class="{% if stats.average_score.split('/')[0]|float >= 18 %}text-success{% else %}text-danger{% endif %}">
+                            {{
+                            stats.average_score }}</h3>
                         <p>Μέση Βαθμολογία</p>
                     </div>
                     <div class="col-md-3 text-center">
-                        <h3 class="text-warning">{{ stats.best_score }}%</h3>
+                        <h3 class="text-success">{{ stats.best_score }}</h3>
                         <p>Καλύτερη Βαθμολογία</p>
                     </div>
                     <div class="col-md-3 text-center">
@@ -52,11 +55,12 @@
                         <tbody>
                             {% for attempt in recent_attempts %}
                             <tr>
-                                <td>{{ attempt.completed_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>{{ to_athens_time(attempt.completed_at).strftime('%Y-%m-%d %H:%M') }}</td>
                                 <td>
                                     <span
-                                        class="badge bg-{% if attempt.score >= 80 %}success{% elif attempt.score >= 60 %}warning{% else %}danger{% endif %}">
-                                        {{ attempt.score }}%
+                                        class="badge bg-{% if attempt.correct_answers >= 18 %}success{% else %}danger{% endif %}">
+                                        {{ attempt.score }}% ({{ attempt.correct_answers }}/{{ attempt.total_questions
+                                        }})
                                     </span>
                                 </td>
                                 <td>{{ attempt.correct_answers }}/{{ attempt.total_questions }}</td>
@@ -86,6 +90,7 @@
             <div class="card-body text-center">
                 <p>Έτοιμοι να δοκιμάσετε τις γνώσεις σας;</p>
                 <p class="text-muted">Κάθε κουίζ περιέχει 20 τυχαία επιλεγμένες ερωτήσεις.</p>
+                <p class="text-primary fw-bold">Για να επιτύχετε, χρειάζεστε τουλάχιστον 18/20 σωστές απαντήσεις.</p>
                 <a href="{{ url_for('start_quiz') }}" class="btn btn-success btn-lg">
                     Έναρξη Κουίζ
                 </a>

@@ -31,8 +31,8 @@ class User(UserMixin, db.Model):
         if not attempts:
             return {
                 "total_quizzes": 0,
-                "average_score": 0,
-                "best_score": 0,
+                "average_score": "0.0/20",
+                "best_score": "0/20",
                 "total_questions_answered": 0,
                 "correct_answers": 0,
                 "accuracy_percentage": 0,
@@ -42,11 +42,20 @@ class User(UserMixin, db.Model):
         scores = [attempt.score for attempt in attempts]
         total_correct = sum(attempt.correct_answers for attempt in attempts)
         total_questions = sum(attempt.total_questions for attempt in attempts)
+        
+        # Find the best attempt (highest correct answers)
+        best_attempt = max(attempts, key=lambda x: x.correct_answers)
+        best_score_absolute = f"{best_attempt.correct_answers}/{best_attempt.total_questions}"
+        
+        # Calculate average score as absolute score (e.g., 17.2/20)
+        average_score_percentage = sum(scores) / total_quizzes
+        average_correct_answers = (average_score_percentage / 100) * 20  # Assuming 20 questions per quiz
+        average_score_absolute = f"{average_correct_answers:.1f}/20"
 
         return {
             "total_quizzes": total_quizzes,
-            "average_score": round(sum(scores) / total_quizzes, 2),
-            "best_score": max(scores),
+            "average_score": average_score_absolute,
+            "best_score": best_score_absolute,
             "total_questions_answered": total_questions,
             "correct_answers": total_correct,
             "accuracy_percentage": round((total_correct / total_questions * 100), 2)

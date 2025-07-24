@@ -3,18 +3,39 @@
 {% block title %}Στατιστικά - Εφαρμογή Κουίζ{% endblock %}
 
 {% block content %}
-<h2>Τα Στατιστικά σας</h2>
+<h2>
+    {% if viewed_user %}
+    Στατιστικά χρήστη: {{ viewed_user.username }}
+    <a href="{{ url_for('admin_panel') }}" class="btn btn-secondary float-end">
+        <i class="bi bi-arrow-left"></i> Επιστροφή στη Διαχείριση
+    </a>
+    {% else %}
+    Τα Στατιστικά σας
+    {% endif %}
+</h2>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div></div> <!-- Empty div for flexbox spacing -->
     <div>
+        {% if not viewed_user %}
         <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#resetStatsModal">
             <i class="bi bi-arrow-counterclockwise"></i> Μηδενισμός Στατιστικών
         </button>
+        {% else %}
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#resetUserStatsModal">
+            <i class="bi bi-arrow-counterclockwise"></i> Μηδενισμός Στατιστικών Χρήστη
+        </button>
+        {% endif %}
     </div>
 </div>
 
 <div class="row mb-4">
+    <div class="col-12 text-center mb-3">
+        <div class="alert alert-info">
+            <strong>Κριτήριο Επιτυχίας:</strong> Για να περάσετε το κουίζ, χρειάζεστε τουλάχιστον 18/20 σωστές
+            απαντήσεις (90%).
+        </div>
+    </div>
     <div class="col-md-2 text-center">
         <div class="card bg-primary text-white">
             <div class="card-body">
@@ -24,17 +45,18 @@
         </div>
     </div>
     <div class="col-md-2 text-center">
-        <div class="card bg-success text-white">
+        <div
+            class="card {% if stats.average_score.split('/')[0]|float >= 18 %}bg-success{% else %}bg-danger{% endif %} text-white">
             <div class="card-body">
-                <h3>{{ stats.average_score }}%</h3>
+                <h3>{{ stats.average_score }}</h3>
                 <p>Μέση Βαθμολογία</p>
             </div>
         </div>
     </div>
     <div class="col-md-2 text-center">
-        <div class="card bg-warning text-white">
+        <div class="card bg-success text-white">
             <div class="card-body">
-                <h3>{{ stats.best_score }}%</h3>
+                <h3>{{ stats.best_score }}</h3>
                 <p>Καλύτερη Βαθμολογία</p>
             </div>
         </div>
@@ -96,11 +118,11 @@
                 <tbody>
                     {% for attempt in all_attempts %}
                     <tr>
-                        <td>{{ attempt.completed_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ to_athens_time(attempt.completed_at).strftime('%Y-%m-%d %H:%M') }}</td>
                         <td>
                             <span
-                                class="badge bg-{% if attempt.score >= 80 %}success{% elif attempt.score >= 60 %}warning{% else %}danger{% endif %}">
-                                {{ attempt.score }}%
+                                class="badge bg-{% if attempt.correct_answers >= 18 %}success{% else %}danger{% endif %}">
+                                {{ attempt.score }}% ({{ attempt.correct_answers }}/{{ attempt.total_questions }})
                             </span>
                         </td>
                         <td>{{ attempt.correct_answers }}/{{ attempt.total_questions }}</td>
@@ -123,6 +145,7 @@
 </div>
 
 <!-- Reset Statistics Modal -->
+{% if not viewed_user %}
 <div class="modal fade" id="resetStatsModal" tabindex="-1" aria-labelledby="resetStatsModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -144,6 +167,32 @@
         </div>
     </div>
 </div>
+{% endif %}
+
+{% if viewed_user %}
+<div class="modal fade" id="resetUserStatsModal" tabindex="-1" aria-labelledby="resetUserStatsModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="resetUserStatsModalLabel">Επιβεβαίωση Μηδενισμού Στατιστικών Χρήστη</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Κλείσιμο"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-danger">Προσοχή: Αυτή η ενέργεια θα διαγράψει όλο το ιστορικό κουίζ και τα στατιστικά
+                    του χρήστη {{ viewed_user.username }}!</p>
+                <p>Είστε βέβαιοι ότι θέλετε να συνεχίσετε;</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Ακύρωση</button>
+                <form action="{{ url_for('reset_user_statistics', user_id=viewed_user.id) }}" method="post">
+                    <button type="submit" class="btn btn-danger">Μηδενισμός Στατιστικών</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 {% if chart_data.dates %}
 <script>
