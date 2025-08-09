@@ -8,7 +8,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # App name
-APP_NAME="Fouskoto Quiz"
+APP_NAME="Boat Licence Quiz"
 
 # Function to print formatted messages
 print_message() {

@@ -90,17 +90,23 @@ def load_questions_from_file():
 
         count = 0
         for q_data in questions_data:
+            # Format question text to include chapter and relative question number
+            chapter = q_data.get("chapter", "")
+            question_number_rel = q_data.get("question_number_rel", "")
+            formatted_question = f"[Κεφ. {chapter}, Ερ. {question_number_rel}] {q_data['question']}"
+            
             existing = Question.query.filter_by(
-                question_text=q_data["question"]
+                question_text=formatted_question
             ).first()
             if not existing:
                 question = Question(
-                    question_text=q_data["question"],
+                    question_text=formatted_question,
                     option_a=q_data["options"]["a"],
                     option_b=q_data["options"]["b"],
                     option_c=q_data["options"]["c"],
                     option_d="", # Adding empty option_d since it's required
                     correct_answer=q_data["correct_answer"],
+                    category=q_data.get("chapter", None),  # Use chapter as category
                 )
                 db.session.add(question)
                 count += 1
