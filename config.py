@@ -9,4 +9,4 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     QUESTIONS_PER_QUIZ = 20
     QUIZ_TIME_MINUTES = 45  # Quiz time limit in minutes
-    SUPERUSER_CODE = "fouskoto-admin-2025"  # Secret code to create superuser
+    SUPERUSER_CODE = "boat-licence-admin-2025"  # Secret code to create superuser
