@@ -2,6 +2,8 @@
 
 This application is a multiple-choice quiz for individuals preparing for the Greek speedboat (boat) license exam.
 
+You can find a public deployment of this application [here]([https://spcalc.ibalampanis.gr](https://boat.ibalampanis.gr/).
+
 ## Features
 
 - User registration and login
